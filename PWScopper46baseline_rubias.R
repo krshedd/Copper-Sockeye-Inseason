@@ -31,6 +31,9 @@ save_objects(objects = baseline_objects, path = "Objects")
 colors8 <- readClipboard()  # V:\Analysis\2_Central\Sockeye\PWSCopper\NFWF baseline project\PWS Copper River Sockeye Analysis.xlsx, tab "Names", column Q
 save_objects(objects = "colors8", path = "Objects")
 
+PWSCopper8Groups_pub <- c("Southwest PWS", "Main Bay/North PWS", "Copper  Delta", "Upper Copper", "Gulkana", "Tazlina and Outlets", "Klutina", "Lower Copper")
+save_objects(objects = "PWSCopper8Groups_pub", path = "Objects")
+
 ## Save sillys
 save_sillys(sillyvec = PWSCopper46Pops, path = "Baseline genotypes")
 
@@ -57,19 +60,19 @@ load_sillys(path = "Baseline genotypes/")
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Create baseline
 # loci91
-copper46_loci91.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci91, group_names = PWSCopper8Groups, groupvec = PWSCopper46GroupVec2, baseline_name = "copper46_loci91")
+copper46_loci91.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci91, group_names = PWSCopper8Groups_pub, groupvec = PWSCopper46GroupVec2, baseline_name = "copper46_loci91")
 save_objects(objects = "copper46_loci91.base", path = "rubias/baseline/")
 load_objects(path = "rubias/baseline/")
 
 # loci24_port_moller
-copper46_loci24_port_moller.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci24_port_moller, group_names = PWSCopper8Groups, groupvec = PWSCopper46GroupVec2, baseline_name = "copper46_loci24_port_moller")
+copper46_loci24_port_moller.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci24_port_moller, group_names = PWSCopper8Groups_pub, groupvec = PWSCopper46GroupVec2, baseline_name = "copper46_loci24_port_moller")
 save_objects(objects = "copper46_loci24_port_moller.base", path = "rubias/baseline/")
 # load_objects(path = "rubias/baseline/")
 
 # loci24_chignik_mod
 loci24_chignik_mod <- gsub(pattern = "One_GPDH2.One_GPDH", replacement = "One_GPDH", x = loci24_chignik)
 save_objects(objects = "loci24_chignik_mod", path = "Objects")
-copper46_loci24_chignik_mod.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci24_chignik_mod, group_names = PWSCopper8Groups, groupvec = PWSCopper46GroupVec2, baseline_name = "copper46_loci24_chignik_mod")
+copper46_loci24_chignik_mod.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci24_chignik_mod, group_names = PWSCopper8Groups_pub, groupvec = PWSCopper46GroupVec2, baseline_name = "copper46_loci24_chignik_mod")
 save_objects(objects = "copper46_loci24_chignik_mod.base", path = "rubias/baseline/")
 
 
@@ -83,7 +86,7 @@ copper46_loci91.base_loo <- assess_reference_loo(reference = copper46_loci91.bas
 
 # Summarize to reporting unit level
 loo_loci91_out <- copper46_loci91.base_loo %>% 
-  mutate(repunit_f = factor(x = repunit, levels = PWSCopper8Groups)) %>% 
+  mutate(repunit_f = factor(x = repunit, levels = PWSCopper8Groups_pub)) %>% 
   group_by(repunit_scenario, iter, repunit_f) %>% 
   summarise(true_repprop = sum(true_pi), repprop_posterior_mean = sum(post_mean_pi), repu_n = sum(n)) %>% 
   mutate(repu_n_prop = repu_n / sum(repu_n))
@@ -105,7 +108,7 @@ copper46_loci24_port_moller.base_loo <- assess_reference_loo(reference = copper4
 
 # Summarize to reporting unit level
 loo_loci24_port_moller_out <- copper46_loci24_port_moller.base_loo %>% 
-  mutate(repunit_f = factor(x = repunit, levels = PWSCopper8Groups)) %>% 
+  mutate(repunit_f = factor(x = repunit, levels = PWSCopper8Groups_pub)) %>% 
   group_by(repunit_scenario, iter, repunit_f) %>% 
   summarise(true_repprop = sum(true_pi), repprop_posterior_mean = sum(post_mean_pi), repu_n = sum(n)) %>% 
   mutate(repu_n_prop = repu_n / sum(repu_n))
@@ -128,7 +131,7 @@ copper46_loci24_chignik_mod.base_loo <- assess_reference_loo(reference = copper4
 
 # Summarize to reporting unit level
 loo_loci24_chignik_mod_out <- copper46_loci24_chignik_mod.base_loo %>% 
-  mutate(repunit_f = factor(x = repunit, levels = PWSCopper8Groups)) %>% 
+  mutate(repunit_f = factor(x = repunit, levels = PWSCopper8Groups_pub)) %>% 
   group_by(repunit_scenario, iter, repunit_f) %>% 
   summarise(true_repprop = sum(true_pi), repprop_posterior_mean = sum(post_mean_pi), repu_n = sum(n)) %>% 
   mutate(repu_n_prop = repu_n / sum(repu_n))
