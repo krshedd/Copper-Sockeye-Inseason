@@ -232,7 +232,7 @@ CombineLoci.GCL(sillyvec = PWSCopper46Pops, markerset = c("One_MHC2_190", "One_M
 CombineLoci.GCL(sillyvec = PWSCopper46Pops, markerset = c("One_CO1", "One_Cytb_17", "One_Cytb_26"), delim=".", update = TRUE)
 
 loci91_v2 <- c(loci91[-c(90:91)], "One_MHC2_190.One_MHC2_251", "One_CO1.One_Cytb_17.One_Cytb_26")
-save_objects(objects = c("Coastwide482Pops", "PWSCopper482GroupVec", "PWSCopper9Groups_pub", "loci91_v2", "colors9"), path = "Objects")
+save_objects(objects = c("Coastwide482Pops", "PWSCopper482GroupVec", "PWSCopper9Groups_pub", "loci91_v2", "colors9", "loci89", "Groups15"), path = "Objects")
 
 copper482_loci91_v2.base <- create_rubias_baseline(sillyvec = Coastwide482Pops, loci = loci91_v2, group_names = PWSCopper9Groups_pub, groupvec = PWSCopper482GroupVec, baseline_name = "copper482_loci91_v2")
 save_objects(objects = "copper482_loci91_v2.base", path = "rubias/baseline/")
