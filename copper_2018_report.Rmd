@@ -1,5 +1,5 @@
 ---
-title: "Copper River Sockeye Test Fishery"
+title: "Copper River Test Fishery"
 subtitle: "Sockeye Salmon Stock Composition Summary"
 output:
   pdf_document: default
@@ -15,10 +15,13 @@ date: "`r paste('Reported on:', format(Sys.Date(), format = '%B %d, %Y'), 'at', 
 knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
 
 library(tidyverse)
+library(lubridate)
 library(knitr)
 library(kableExtra)
 library(ggpubr)
 load("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/copper_2018_SW26.RData")
+
+strata_date_range <- format(strata_date_range, format = "%B %d, %Y")
 
 n_geno <- get(paste0("sillys_strata_2018_SW", sw, "_n"))[sillys_strata, "Genotyped"]
 n_final <- get(paste0("sillys_strata_2018_SW", sw, "_n"))[sillys_strata, "Final"]
@@ -41,12 +44,12 @@ copper_2018_dates.sum %>%
   kable_styling(position = "center")
 ```
 
-```{r stock_comp_figure, fig.height=6, fig.width=5, fig.align="center"}
+```{r stock_comp_figure, fig.height=5.75, fig.width=5, fig.align="center"}
 copper_2018_dates.sum %>% 
   filter(year == 2018, stat_week == sw) %>% 
   ggplot(aes(x = reporting_group, y = mean * 100, fill = reporting_group, ymin = `5%` * 100, ymax = `95%` * 100)) +
   geom_col(colour = "black") +
-  scale_fill_manual(values = PWSCopper8Groups_pub) +
+  scale_fill_manual(values = colors8) +
   geom_errorbar(width = 0.5) +
   scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100), expand = c(0, 0)) +
   ylab("Stock Composition Estimates (%)") +
@@ -79,11 +82,11 @@ copper_2018_dates.sum %>%
 ```
 
 ```{r stat_week_stock_comp_figure, fig.height=6.5, fig.width=7.5, fig.align="center"}
-date_range_2018 <- c(unique(copper_2018_dates.sum$date_range), vector(mode = "character", length = 6))
+date_range_2018 <- c(unique(copper_2018_dates.sum$sample_date), vector(mode = "character", length = 6))
 
 copper_2018_dates.sum %>% 
   filter(year == 2018) %>% 
-  select(reporting_group, stat_week, date_range, mean) %>% 
+  select(reporting_group, stat_week, sample_date, mean) %>% 
   mutate(stat_week = factor(stat_week, levels = 26:31)) %>% 
   mutate(mean = mean * 100) %>% 
   complete(stat_week, reporting_group, fill = list(mean = 0, date_range = '')) %>% 
