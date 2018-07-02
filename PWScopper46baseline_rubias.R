@@ -153,3 +153,110 @@ ggsave(filename = "Baseline test results/Leave-one-out_loci24_chignik_mod.png", 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Use all 96 SNPs in order to maintain high accuracy and precision
 # Kyle Shedd Fri Jun 29 15:46:18 2018
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#### Combine Tyler's 2013 PWS/Copper with Coastwide 473 ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rm(list = ls())
+require(tidyverse)
+require(rubias)
+source("C:/Users/krshedd/R/Functions.GCL.R")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Get coastwide silly's
+setwd("V:/Analysis/4_Westward/Sockeye/KMA Commercial Harvest 2014-2016/Baseline/")
+
+#~~~~~~~~~~~~~~~~~~
+# Get Locus Control, objects, and populations
+LocusControl <- dget(file = "Objects/LocusControl103.txt")
+loci89 <- dget(file = "Objects/loci89.txt")
+KMA473Pops <- dget(file = "Objects/KMA473Pops.txt")
+KMA473PopsGroupVec15 <- dget(file = "Objects/KMA473PopsGroupVec15.txt")
+Groups15 <- dget(file = "Objects/Groups15.txt")
+Colors15 <- dget(file = "Objects/Colors15.txt")
+
+load_sillys(path = "Raw genotypes/PostQCPopsloci103", sillyvec = KMA473Pops)
+length(objects(pattern = "\\.gcl"))
+
+#~~~~~~~~~~~~~~~~~~
+# Create rubias baseline of KMA473
+setwd("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/")
+kma473_loci89.base <- create_rubias_baseline(sillyvec = KMA473Pops, loci = loci89, group_names = Groups15, groupvec = KMA473PopsGroupVec15, baseline_name = "kma473_loci89")
+save_objects(objects = "kma473_loci89.base", path = "rubias/baseline/")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## rubias loo tests
+# kma 473 loci89
+kma473_loci89.base_loo <- assess_reference_loo(reference = kma473_loci89.base, gen_start_col = 5, reps = 100, mixsize = 200)
+
+# Summarize to reporting unit level
+loo_loci91_v2_out <- kma473_loci89.base_loo %>% 
+  mutate(repunit_f = factor(x = repunit, levels = Groups15)) %>% 
+  group_by(repunit_scenario, iter, repunit_f) %>% 
+  summarise(true_repprop = sum(true_pi), repprop_posterior_mean = sum(post_mean_pi), repu_n = sum(n)) %>% 
+  mutate(repu_n_prop = repu_n / sum(repu_n))
+
+# Plot LOO results
+ggplot(loo_loci91_v2_out, aes(x = repu_n_prop, y = repprop_posterior_mean, colour = repunit_f)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  scale_color_manual(name = "Reporting Group", values = Colors15) +
+  facet_wrap(~ repunit_f) +
+  xlab("True Reporting Group Proportion") +
+  ylab("Posterior Mean Reporting Group Proportion") +
+  ggtitle("Lynn Canal Leave-one-out Test Results coastwide_loci91_v2 loci")
+ggsave(filename = "Baseline test results/Leave-one-out_kma_loci89.png", device = "png", width = 6.5, height = 6.5)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Drop PWS/Copper sillys
+table(KMA473PopsGroupVec15)  # remove 37 PWS Copper sillys (group 14)
+sum(KMA473PopsGroupVec15 == which(Groups15 == "PWS Copper"))
+Coastwide436Pops <- KMA473Pops[which(KMA473PopsGroupVec15 != which(Groups15 == "PWS Copper"))]
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Get PWS/Copper silly's
+setwd("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/")
+
+load_objects(path = "Objects")
+load_sillys(path = "Baseline genotypes")
+
+Coastwide482Pops <- c(PWSCopper46Pops, Coastwide436Pops)
+PWSCopper482GroupVec <- c(PWSCopper46GroupVec2, rep(9, 436))
+PWSCopper9Groups_pub <- c(PWSCopper8Groups_pub, "Other")
+colors9 <- c(colors8, "grey20")
+
+CombineLoci.GCL(sillyvec = PWSCopper46Pops, markerset = c("One_MHC2_190", "One_MHC2_251"), delim = ".", update = TRUE)
+CombineLoci.GCL(sillyvec = PWSCopper46Pops, markerset = c("One_CO1", "One_Cytb_17", "One_Cytb_26"), delim=".", update = TRUE)
+
+loci91_v2 <- c(loci91[-c(90:91)], "One_MHC2_190.One_MHC2_251", "One_CO1.One_Cytb_17.One_Cytb_26")
+save_objects(objects = c("Coastwide482Pops", "PWSCopper482GroupVec", "PWSCopper9Groups_pub", "loci91_v2", "colors9"), path = "Objects")
+
+copper482_loci91_v2.base <- create_rubias_baseline(sillyvec = Coastwide482Pops, loci = loci91_v2, group_names = PWSCopper9Groups_pub, groupvec = PWSCopper482GroupVec, baseline_name = "copper482_loci91_v2")
+save_objects(objects = "copper482_loci91_v2.base", path = "rubias/baseline/")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## rubias loo tests
+# copper 482 loci91_v2
+copper482_loci91_v2.base_loo <- assess_reference_loo(reference = copper482_loci91_v2.base, gen_start_col = 5, reps = 100, mixsize = 200)
+
+# Summarize to reporting unit level
+loo_loci91_v2_out <- copper482_loci91_v2.base_loo %>% 
+  mutate(repunit_f = factor(x = repunit, levels = PWSCopper9Groups_pub)) %>% 
+  group_by(repunit_scenario, iter, repunit_f) %>% 
+  summarise(true_repprop = sum(true_pi), repprop_posterior_mean = sum(post_mean_pi), repu_n = sum(n)) %>% 
+  mutate(repu_n_prop = repu_n / sum(repu_n))
+
+# Plot LOO results
+ggplot(loo_loci91_v2_out, aes(x = repu_n_prop, y = repprop_posterior_mean, colour = repunit_f)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  scale_color_manual(name = "Reporting Group", values = colors9) +
+  facet_wrap(~ repunit_f) +
+  xlab("True Reporting Group Proportion") +
+  ylab("Posterior Mean Reporting Group Proportion") +
+  ggtitle("Lynn Canal Leave-one-out Test Results coastwide_loci91_v2 loci")
+ggsave(filename = "Baseline test results/Leave-one-out_coastwide_loci91_v2.png", device = "png", width = 6.5, height = 6.5)
