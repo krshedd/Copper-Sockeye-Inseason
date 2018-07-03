@@ -271,3 +271,69 @@ save_objects(objects = "copper_2018_dates.sum", path = "Estimates objects")
 
 # Save all output for Rmd
 save.image("copper_2018_SW26.RData")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#### Re-run with 9 Groups ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Split out Mendeltna (Tonzina) from Klutina/Tonsina Outlets
+rm(list = ls())
+setwd("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/")
+
+load("copper_2018_SW26.RData")
+
+load_objects(path = "Objects")
+load_objects(path = "rubias/baseline")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Run MSA
+copper_2018_SW26.out <- run_rubias_mixture(reference = copper46_9groups_loci91.base,
+                                           mixture = copper_2018_SW26.mix, 
+                                           group_names = PWSCopper9Groups_46Pops_pub,
+                                           gen_start_col = 5, 
+                                           method = "MCMC", 
+                                           reps = 25000, 
+                                           burn_in = 5000, 
+                                           pb_iter = 100,
+                                           sample_int_Pi = 10,
+                                           path = "rubias/output")
+str(copper_2018_SW26.out, give.attr = FALSE, max.level = 2)
+# save.image("copper_2018_SW26.RData")
+# load("rubias/output/copper_2018_SW26.RData")
+copper_2018_SW26.out$mixing_proportions %>% 
+  group_by(repunit) %>% 
+  summarize(rho = sum(pi))
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## rubais output
+copper_2018_SW26.sum <- custom_combine_rubias_output(rubias_output = copper_2018_SW26.out, group_names = PWSCopper9Groups_46Pops_pub, bias_corr = FALSE)
+str(copper_2018_SW26.sum)
+
+# Save as R object via `dput`
+# dir.create("Estimates objects")
+
+# Write out as .csv file
+# dir.create("Estimates tables")
+copper_2018_SW26_dates.sum <- copper_2018_SW26.sum %>%
+  separate(col = mixture_collection, into = c("year", "stat_week"), sep = "_SW") %>%  # split mixture into silly and stat_week
+  separate(col = year, into = c("trash", "year"), sep = "SCDVTF") %>%
+  select(-trash) %>%
+  mutate(year = as.integer(year) + 2000) %>%  # year as integer
+  mutate(sample_date = paste(month(strata_date_range), day(strata_date_range), sep = "/")) %>%  # sample date
+  rename(reporting_group = repunit) %>%  # rename to reporting group
+  select(year, stat_week, sample_date, reporting_group, mean, sd, median, `5%`, `95%`, `P=0`)  # order
+
+
+save_objects(objects = "copper_2018_SW26_dates.sum", path = "Estimates objects")
+write_csv(x = copper_2018_SW26_dates.sum, path = "Estimates tables/CopperRiver_Sockeye_2018_SW26_Estimates.csv")
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#### Create report ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Dget data from all SWs
+copper_2018_dates.sum <- bind_rows(lapply(list.files(path = "Estimates objects", pattern = "2018_SW", full.names = TRUE), dget)) %>% 
+  mutate(stat_week = factor(x = stat_week, levels = unique(stat_week)))
+save_objects(objects = "copper_2018_dates.sum", path = "Estimates objects")
+
+# Save all output for Rmd
+save.image("copper_2018_SW26.RData")

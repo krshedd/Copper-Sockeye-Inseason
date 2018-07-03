@@ -260,3 +260,56 @@ ggplot(loo_loci91_v2_out, aes(x = repu_n_prop, y = repprop_posterior_mean, colou
   ylab("Posterior Mean Reporting Group Proportion") +
   ggtitle("Lynn Canal Leave-one-out Test Results coastwide_loci91_v2 loci")
 ggsave(filename = "Baseline test results/Leave-one-out_coastwide_loci91_v2.png", device = "png", width = 6.5, height = 6.5)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#### New Groups, split Mendeltna ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+rm(list = ls())
+
+library(tidyverse)
+library(rubias)
+source("C:/Users/krshedd/R/Functions.GCL.R")
+
+setwd("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/")
+load_objects(path = "Objects")
+load_sillys(path = "Baseline genotypes/")
+
+sapply(PWSCopper8Groups_pub, function(grp) {i <- which(PWSCopper8Groups_pub == grp); PWSCopper46Pops[PWSCopper46GroupVec2 == i]})
+
+PWSCopper9Groups_46Pops_pub <- c(PWSCopper8Groups_pub[1:5], "Tazlina", "Klutina/Tonsina Outlets", "Klutina Lake", PWSCopper8Groups_pub[8])
+PWSCopper46GroupVec9 <- as.numeric(readClipboard())  # V:\Analysis\2_Central\Sockeye\PWSCopper\NFWF baseline project\PWS Copper River Sockeye Analysis.xlsx; tab Names; column AC
+
+sapply(PWSCopper9Groups_46Pops_pub, function(grp) {i <- which(PWSCopper9Groups_46Pops_pub == grp); PWSCopper46Pops[PWSCopper46GroupVec9 == i]})
+cbind("Silly" = PWSCopper46Pops, "old" = PWSCopper8Groups_pub[PWSCopper46GroupVec2], "new" = PWSCopper9Groups_46Pops_pub[PWSCopper46GroupVec9])
+
+colors9 <- c(colors8[1:5], "grey20", "grey60", colors8[7:8])
+
+save_objects(objects = c("PWSCopper9Groups_46Pops_pub", "PWSCopper46GroupVec9", "colors9"), path = "Objects")
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Create baseline
+# loci91
+copper46_9groups_loci91.base <- create_rubias_baseline(sillyvec = PWSCopper46Pops, loci = loci91, group_names = PWSCopper9Groups_46Pops_pub, groupvec = PWSCopper46GroupVec9, baseline_name = "copper46_9groups_loci91")
+save_objects(objects = "copper46_9groups_loci91.base", path = "rubias/baseline/")
+
+## loci91
+copper46_9groups_loci91.base_loo <- assess_reference_loo(reference = copper46_9groups_loci91.base, gen_start_col = 5, reps = 100, mixsize = 200)
+
+# Summarize to reporting unit level
+loo_loci91_out <- copper46_9groups_loci91.base_loo %>% 
+  mutate(repunit_f = factor(x = repunit, levels = PWSCopper9Groups_46Pops_pub)) %>% 
+  group_by(repunit_scenario, iter, repunit_f) %>% 
+  summarise(true_repprop = sum(true_pi), repprop_posterior_mean = sum(post_mean_pi), repu_n = sum(n)) %>% 
+  mutate(repu_n_prop = repu_n / sum(repu_n))
+
+# Plot LOO results
+ggplot(loo_loci91_out, aes(x = repu_n_prop, y = repprop_posterior_mean, colour = repunit_f)) +
+  geom_point() +
+  geom_abline(intercept = 0, slope = 1) +
+  scale_color_manual(name = "Reporting Group", values = colors9) +
+  facet_wrap(~ repunit_f) +
+  xlab("True Reporting Group Proportion") +
+  ylab("Posterior Mean Reporting Group Proportion") +
+  ggtitle("Lynn Canal Leave-one-out Test Results 91 loci")
+ggsave(filename = "Baseline test results/Leave-one-out_9groups_loci91.png", device = "png", width = 6.5, height = 6.5)
