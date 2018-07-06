@@ -19,7 +19,8 @@ library(lubridate)
 library(knitr)
 library(kableExtra)
 library(ggpubr)
-load("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/copper_2018_SW26.RData")
+# load("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/copper_2018_SW27.RData")
+load("C:/Users/krshedd/R/Copper River Inseason/2018/copper_2018_SW27.RData")
 
 strata_date_range <- format(strata_date_range, format = "%B %d, %Y")
 

@@ -362,18 +362,20 @@ load_sillys(path = "Raw genotypes", sillyvec = sillys)
 # save_sillys(sillyvec = sillys, path = "Raw genotypes")
 # load_sillys(path = "Raw genotypes", sillyvec = sillys)
 
-sapply(sillys, function(silly) {get(paste0(silly, ".gcl"))$n} )  # 190
+sapply(sillys, function(silly) {get(paste0(silly, ".gcl"))$n} )  # 380
 sapply(sillys, function(silly) {table(get(paste0(silly, ".gcl"))$attributes$CAPTURE_DATE, useNA = "always")} )
+
+SCDVTF18.gcl$attributes$CAPTURE_DATE[is.na(SCDVTF18.gcl$attributes$CAPTURE_DATE)] <- as.POSIXct("2018-07-03", tz = "America/Anchorage")
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #### Stratify mixtures ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 tissue_table <- read_csv(file = "Tissue inventory/GEN_SAMPLED_FISH_TISSUE_SW27.csv")
-table(tissue_table$CAPTURE_DATE)
-n_samp <- 244  # How many tissues were built for this sampling event???
+table(tissue_table$CAPTURE_DATE, useNA = "always")
+n_samp <- 311  # How many tissues were built for this sampling event???
 
 # IDs
-samp_dates <- unique(get(paste0(sillys, ".gcl"))$attributes$CAPTURE_DATE)[1]
+samp_dates <- unique(get(paste0(sillys, ".gcl"))$attributes$CAPTURE_DATE)[2]
 
 SW27_IDs <- AttributesToIDs.GCL(silly = sillys, attribute = "CAPTURE_DATE", matching = samp_dates)
 SW27_IDs <- list(na.omit(SW27_IDs))
@@ -399,8 +401,8 @@ sillys_strata_2018_SW27_n <- matrix(data = NA, nrow = length(sillys_strata), nco
 #### Check loci
 ## Get sample size by locus
 original_sillys_strata_2018_SW27_n_locus <- SampSizeByLocus.GCL(sillyvec = sillys_strata, loci = loci96)
-min(original_sillys_strata_2018_SW27_n_locus)  ## 167
-round(apply(original_sillys_strata_2018_SW27_n_locus, 1, function(locus) {min(locus) / max(locus)}), 2)  # 0.88
+min(original_sillys_strata_2018_SW27_n_locus)  ## 168
+round(apply(original_sillys_strata_2018_SW27_n_locus, 1, function(locus) {min(locus) / max(locus)}), 2)  # 0.89
 
 original_sillys_strata_percent_locus <- apply(original_sillys_strata_2018_SW27_n_locus, 1, function(row) {row / max(row)} )  # 0.89
 which(apply(original_sillys_strata_percent_locus, 2, min) < 0.8)  # no re-runs!
@@ -469,7 +471,6 @@ CombineLoci.GCL(sillyvec = sillys_strata, markerset = c("One_Tf_ex10-750", "One_
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Create mixtures
-dir.create("rubias/mixture/kma473")
 copper_2018_SW27_loci89.mix <- create_rubias_mixture(sillyvec = sillys_strata, loci = loci89, path = "rubias/mixture/kma473")
 save_objects(objects = "copper_2018_SW27_loci89.mix", path = "rubias/mixture/kma473")
 # load_objects(path = "rubias/mixture")
@@ -477,7 +478,6 @@ str(copper_2018_SW27_loci89.mix, give.attr = FALSE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Run MSA
-dir.create("rubias/output/kma473")
 copper_2018_SW27_loci89.out <- run_rubias_mixture(reference = kma473_loci89.base,
                                                   mixture = copper_2018_SW27_loci89.mix, 
                                                   group_names = Groups15,
@@ -488,10 +488,9 @@ copper_2018_SW27_loci89.out <- run_rubias_mixture(reference = kma473_loci89.base
                                                   pb_iter = 100,
                                                   sample_int_Pi = 10,
                                                   path = "rubias/output/kma473")
-str(copper_2018_SW27_loci89.out, give.attr = FALSE, max.level = 2)
 copper_2018_SW27_loci89.out$mixing_proportions %>% 
   group_by(repunit) %>% 
-  summarize(rho = sum(pi))  # Copper = 99%
+  summarize(rho = sum(pi))  # Copper = 98%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -499,7 +498,6 @@ copper_2018_SW27_loci89.out$mixing_proportions %>%
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Create mixtures
-dir.create("rubias/mixture/coastwide482")
 copper_2018_SW27_loci91_v2.mix <- create_rubias_mixture(sillyvec = sillys_strata, loci = loci91_v2, path = "rubias/mixture/coastwide482")
 save_objects(objects = "copper_2018_SW27_loci91_v2.mix", path = "rubias/mixture/coastwide482")
 # load_objects(path = "rubias/mixture")
@@ -507,7 +505,6 @@ str(copper_2018_SW27_loci91_v2.mix, give.attr = FALSE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Run MSA
-dir.create("rubias/output/coastwide482")
 copper_2018_SW27_loci91_v2.out <- run_rubias_mixture(reference = copper482_loci91_v2.base,
                                                      mixture = copper_2018_SW27_loci91_v2.mix, 
                                                      group_names = PWSCopper9Groups_pub,
@@ -518,16 +515,21 @@ copper_2018_SW27_loci91_v2.out <- run_rubias_mixture(reference = copper482_loci9
                                                      pb_iter = 100,
                                                      sample_int_Pi = 10,
                                                      path = "rubias/output/coastwide482")
-str(copper_2018_SW27_loci91_v2.out, give.attr = FALSE, max.level = 2)
 copper_2018_SW27_loci91_v2.out$mixing_proportions %>% 
   group_by(repunit) %>% 
-  summarize(rho = sum(pi))  # Other < 1%
+  summarize(rho = sum(pi))  # Other = 2%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 #### MSA with rubias 9 Groups ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Split out Mendeltna (Tonzina) from Klutina/Tonsina Outlets
+## Create mixtures
+# dir.create("rubias/mixture")
+copper_2018_SW27.mix <- create_rubias_mixture(sillyvec = sillys_strata, loci = loci91, path = "rubias/mixture")
+save_objects(objects = "copper_2018_SW27.mix", path = "rubias/mixture")
+# load_objects(path = "rubias/mixture")
+str(copper_2018_SW27.mix, give.attr = FALSE)
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 ## Run MSA
