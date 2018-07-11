@@ -599,14 +599,14 @@ sillys_strata <- paste0(sillys, "_SW", sw)
 #### Read in mixture genotypes ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 LocusControl <- dget(file = "Objects/LocusControl_Sockeye2011_96SNPs.txt")
-load_sillys(path = "Raw genotypes", sillyvec = sillys)
-
-# CreateLocusControl.GCL(markersuite = "Sockeye2011_96SNPs", username = "krshedd", password = password)
-# LOKI2R.GCL(sillyvec = sillys, username = "krshedd", password = password)
-# save_sillys(sillyvec = sillys, path = "Raw genotypes")
 # load_sillys(path = "Raw genotypes", sillyvec = sillys)
 
-sapply(sillys, function(silly) {get(paste0(silly, ".gcl"))$n} )  # 380
+# CreateLocusControl.GCL(markersuite = "Sockeye2011_96SNPs", username = "krshedd", password = password)
+LOKI2R.GCL(sillyvec = sillys, username = "krshedd", password = password)
+save_sillys(sillyvec = sillys, path = "Raw genotypes")
+# load_sillys(path = "Raw genotypes", sillyvec = sillys)
+
+sapply(sillys, function(silly) {get(paste0(silly, ".gcl"))$n} )  # 189
 sapply(sillys, function(silly) {table(get(paste0(silly, ".gcl"))$attributes$CAPTURE_DATE, useNA = "always")} )
 
 # SCDVTF18.gcl$attributes$CAPTURE_DATE[is.na(SCDVTF18.gcl$attributes$CAPTURE_DATE)] <- as.POSIXct("2018-07-03", tz = "America/Anchorage")
@@ -616,10 +616,10 @@ sapply(sillys, function(silly) {table(get(paste0(silly, ".gcl"))$attributes$CAPT
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 tissue_table <- read_csv(file = "Tissue inventory/GEN_SAMPLED_FISH_TISSUE_SW28.csv")
 table(tissue_table$CAPTURE_DATE, useNA = "always")
-n_samp <- 311  # How many tissues were built for this sampling event???
+n_samp <- 189  # How many tissues were built for this sampling event???
 
 # IDs
-samp_dates <- unique(get(paste0(sillys, ".gcl"))$attributes$CAPTURE_DATE)[2]
+samp_dates <- unique(get(paste0(sillys, ".gcl"))$attributes$CAPTURE_DATE)[1]
 
 SW28_IDs <- AttributesToIDs.GCL(silly = sillys, attribute = "CAPTURE_DATE", matching = samp_dates)
 SW28_IDs <- list(na.omit(SW28_IDs))
@@ -627,7 +627,7 @@ names(SW28_IDs) <- sillys
 
 # Pool
 PoolCollections.GCL(collections = sillys, loci = loci96, IDs = SW28_IDs, newname = sillys_strata)
-get(paste0(sillys_strata, ".gcl"))$n ## 190
+get(paste0(sillys_strata, ".gcl"))$n ## 189
 table(get(paste0(sillys_strata, ".gcl"))$attributes$CAPTURE_DATE)
 
 strata_date_range <- unique(get(paste0(sillys_strata, ".gcl"))$attributes$CAPTURE_DATE)
@@ -645,7 +645,7 @@ sillys_strata_2018_SW28_n <- matrix(data = NA, nrow = length(sillys_strata), nco
 #### Check loci
 ## Get sample size by locus
 original_sillys_strata_2018_SW28_n_locus <- SampSizeByLocus.GCL(sillyvec = sillys_strata, loci = loci96)
-min(original_sillys_strata_2018_SW28_n_locus)  ## 168
+min(original_sillys_strata_2018_SW28_n_locus)  ## 175
 round(apply(original_sillys_strata_2018_SW28_n_locus, 1, function(locus) {min(locus) / max(locus)}), 2)  # 0.89
 
 original_sillys_strata_percent_locus <- apply(original_sillys_strata_2018_SW28_n_locus, 1, function(row) {row / max(row)} )  # 0.89
@@ -734,7 +734,7 @@ copper_2018_SW28_loci89.out <- run_rubias_mixture(reference = kma473_loci89.base
                                                   path = "rubias/output/kma473")
 copper_2018_SW28_loci89.out$mixing_proportions %>% 
   group_by(repunit) %>% 
-  summarize(rho = sum(pi))  # Copper = 98%
+  summarize(rho = sum(pi))  # Copper = 96%
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

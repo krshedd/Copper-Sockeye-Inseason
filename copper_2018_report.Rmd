@@ -1,5 +1,5 @@
 ---
-title: "Copper River Test Fishery"
+title: "Copper River Commercial Fishery"
 subtitle: "Sockeye Salmon Stock Composition Summary"
 output:
   pdf_document: default
@@ -19,8 +19,8 @@ library(lubridate)
 library(knitr)
 library(kableExtra)
 library(ggpubr)
-# load("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/copper_2018_SW27.RData")
-load("C:/Users/krshedd/R/Copper River Inseason/2018/copper_2018_SW27.RData")
+load("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason 2018/copper_2018_SW28.RData")
+# load("C:/Users/krshedd/R/Copper River Inseason/2018/copper_2018_SW27.RData")
 
 strata_date_range <- format(strata_date_range, format = "%B %d, %Y")
 
@@ -30,7 +30,7 @@ n_final <- get(paste0("sillys_strata_2018_SW", sw, "_n"))[sillys_strata, "Final"
 
 # `r strata_date_range`
 
-The following describes genetic stock composition estimates for sockeye salmon from the Copper River test fishery for `r strata_date_range`. A total of `r n_samp` fish were sampled and `r n_geno` were analyzed (`r n_final` had adequate data to include in this analysis).
+The following describes genetic stock composition estimates for sockeye salmon from the Copper River commercial fishery for `r strata_date_range`. A total of `r n_samp` fish were sampled and `r n_geno` were analyzed (`r n_final` had adequate data to include in this analysis).
 
 ```{r estimates_table, fig.align="center"}
 copper_2018_dates.sum %>%
