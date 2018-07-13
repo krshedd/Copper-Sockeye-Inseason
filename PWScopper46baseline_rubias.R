@@ -313,3 +313,17 @@ ggplot(loo_loci91_out, aes(x = repu_n_prop, y = repprop_posterior_mean, colour =
   ylab("Posterior Mean Reporting Group Proportion") +
   ggtitle("Lynn Canal Leave-one-out Test Results 91 loci")
 ggsave(filename = "Baseline test results/Leave-one-out_9groups_loci91.png", device = "png", width = 6.5, height = 6.5)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+## Map
+ncol_per_pop <- sapply(strsplit(x = PWSCopper46Pops, "\\."), length)
+PWSCopper60GroupVec9 <- rep(x = PWSCopper46GroupVec9, times = ncol_per_pop)
+writeClipboard(PWSCopper60GroupVec9)
+writeClipboard(PWSCopper9Groups_46Pops_pub[PWSCopper60GroupVec9])
+writeClipboard(colors9[PWSCopper60GroupVec9])
+write.table(x = t(col2rgb(colors9[PWSCopper60GroupVec9])), file = 'clipboard', col.names = FALSE, row.names = FALSE)
+t(col2rgb(colors9))
+
+plot.new()
+legend("topleft", legend = PWSCopper9Groups_46Pops_pub, fill = colors9, bty = "n", cex = 1.5, title = "Reporting Groups")
