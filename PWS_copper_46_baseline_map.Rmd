@@ -1,0 +1,53 @@
+---
+title: "PWS/Copper River Sockeye Baseline"
+author: "Kyle Shedd"
+date: "October 4, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(leaflet)
+library(DT)
+```
+
+## Sockeye Baseline Collections
+
+This is a quick look at collections in our PWS/Copper River sockeye salmon baseline.
+
+```{r load_data, echo=TRUE, message=FALSE, warning=FALSE}
+latlong <- read_csv(file = "../Copper Inseason 2018/copper46_baseline_Just the Lat_Longs.csv") %>% 
+  rename(silly = `Silly Code`, latitude = Latitude, longitude = Longitude) %>% 
+  select(silly, latitude, longitude)  # drop extemporaneous variables
+
+sockeye <- read_csv(file = "../Copper Inseason 2018/PWS Copper River Sockeye Genetic Baseline.csv") %>% 
+  mutate(date = as.Date(date, format = "%m/%d/%Y")) %>%  # make as date
+  rename(n = final) %>%  # final n
+  left_join(latlong, by = "silly") %>%  # join lat long
+  select(reporting_group, silly, location, latitude, longitude, collection_no, population_no, date, n) %>% 
+  mutate(longitude = -abs(longitude))  # force longitude to be negative
+```
+
+## Data Table
+
+Here is an interactive table of the baseline collections.
+
+```{r table}
+datatable(sockeye)
+```
+
+## Maps
+
+Here is an interactive map of the baseline collections.
+
+```{r baseline_map}
+sockeye %>% 
+  leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(~ longitude, ~ latitude, popup = ~ paste(
+    paste("ADF&G code:", silly), 
+    paste("Location:", location), 
+    paste("Group:", reporting_group), 
+    sep = "<br>"))
+```
