@@ -828,3 +828,40 @@ save_objects(objects = "copper_2018_dates.sum", path = "Estimates objects")
 
 # Save all output for Rmd
 save.image("copper_2018_SW28.RData")
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#### Create weekly stacked figure for publications ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+library(tidyverse)
+library(lubridate)
+library(knitr)
+library(kableExtra)
+library(ggpubr)
+load("V:/Analysis/2_Central/Sockeye/PWSCopper/Copper Inseason/2018/copper_2018_SW28.RData")
+
+date_range_2018 <- c(unique(copper_2018_dates.sum$sample_date), vector(mode = "character", length = 6))
+
+copper_2018_dates.sum %>% 
+  filter(year == 2018) %>% 
+  select(reporting_group, stat_week, sample_date, mean) %>% 
+  mutate(stat_week = factor(stat_week, levels = 26:31)) %>% 
+  mutate(mean = mean * 100) %>% 
+  complete(stat_week, reporting_group, fill = list(mean = 0, date_range = '')) %>% 
+  # mutate(date_range = factor(x = date_range, levels = unique(date_range))) %>% 
+  ggplot(aes(x = stat_week, y = mean, fill = reporting_group)) +
+  geom_col(position = "stack", colour = "black") +
+  scale_fill_manual(values = colors9) +
+  scale_y_continuous(breaks = seq(0, 100, 20), limits = c(0, 100.1), expand = c(0, 0)) +
+  scale_x_discrete(labels = date_range_2018) +
+  # ggtitle("Comparison of Weekly Stock\nComposition Estimates") +
+  ylab("Stock Composition Estimates (%)") +
+  xlab("Date") +
+  labs(fill = "Reporting Group") +
+  theme_classic(base_size = 14) +
+  theme(text = element_text(family = "serif"),
+        plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.position = c(0.8, 0.65))
+ggsave(filename = "../2018/Figures/copper_sockeye_2018_stockcomp_summary.png", width = 6.5, height = 6.5)
